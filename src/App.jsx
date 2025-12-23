@@ -239,7 +239,7 @@ const BlogList = ({ blogs, onView }) => {
       {/* Header Section */}
       <div className="text-center border-b-4 border-double border-gray-700 pb-8">
         <h1 className="font-newspaper-title text-6xl md:text-7xl font-bold text-white tracking-tight mb-4">
-          BABY GIRL
+          ROOT ACCESS
         </h1>
         <div className="flex items-center justify-center space-x-4 text-teal-500 font-sans text-xs tracking-widest uppercase">
           <span className="h-px w-8 bg-teal-800"></span>
