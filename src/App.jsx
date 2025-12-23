@@ -17,7 +17,8 @@ import profileIcon from "./profile2.png";
 import myBackground from "./myBg.jpg";
 
 
-const API_BASE_URL = "http://localhost:4000";
+// Change this line (approx line 20)
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 
 
