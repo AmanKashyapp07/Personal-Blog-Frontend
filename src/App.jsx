@@ -7,7 +7,8 @@ import {
   useNavigate,
   useParams,
   Navigate,
-  useLocation
+  useLocation,
+  
 } from "react-router-dom";
 import {
   PenTool,
@@ -17,6 +18,8 @@ import {
   ArrowLeft,
   Loader2,
   BookOpen,
+  MessageSquare, // <--- You were missing this
+  Send,
 } from "lucide-react";
 
 // --- IMAGES ---
@@ -250,22 +253,62 @@ const BlogList = ({ blogs }) => {
 const BlogReader = ({ token }) => {
   const { id } = useParams();
   const navigate = useNavigate();
+  
+  // Blog State
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
+  
+  // Comment State
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState("");
+  const [submittingComment, setSubmittingComment] = useState(false);
 
+  // Initial Data Fetch (Blog + Comments)
   useEffect(() => {
-    const fetchBlog = async () => {
+    const fetchData = async () => {
       try {
-        const data = await apiCall(`/api/blogs/${id}`, "GET", null, token);
-        setBlog(data);
+        setLoading(true);
+        // 1. Fetch Blog Details
+        const blogData = await apiCall(`/api/blogs/${id}`, "GET", null, token);
+        setBlog(blogData);
+
+        // 2. Fetch Comments
+        const commentsData = await apiCall(`/api/blogs/${id}/comments`, "GET", null, token);
+        setComments(commentsData);
+
       } catch (err) {
-        console.error(err);
+        console.error("Error fetching data:", err);
       } finally {
         setLoading(false);
       }
     };
-    if (id) fetchBlog();
+    
+    if (id) fetchData();
   }, [id, token]);
+
+  // Handle Post Comment
+  const handlePostComment = async (e) => {
+    e.preventDefault();
+    if (!newComment.trim()) return;
+
+    setSubmittingComment(true);
+    try {
+      const payload = { content: newComment };
+
+      // Post the comment
+      await apiCall(`/api/blogs/${id}/comments`, "POST", payload, token);
+
+      // Refresh comments immediately to show the new one
+      const updatedComments = await apiCall(`/api/blogs/${id}/comments`, "GET", null, token);
+      setComments(updatedComments);
+      setNewComment(""); // Clear input
+    } catch (err) {
+      console.error("Failed to post comment:", err);
+      alert("Failed to post comment. Please try again.");
+    } finally {
+      setSubmittingComment(false);
+    }
+  };
 
   if (loading)
     return (
@@ -273,6 +316,7 @@ const BlogReader = ({ token }) => {
         <Loader2 className="h-8 w-8 animate-spin text-teal-500" />
       </div>
     );
+
   if (!blog)
     return (
       <div className="p-12 text-center font-newspaper-title text-2xl text-gray-500">
@@ -281,7 +325,8 @@ const BlogReader = ({ token }) => {
     );
 
   return (
-    <div className="mx-auto max-w-7xl animate-slide-up px-4">
+    <div className="mx-auto max-w-7xl animate-slide-up px-4 pb-20">
+      {/* --- Navigation --- */}
       <button
         onClick={() => navigate("/")}
         className="group mb-12 flex items-center text-xs font-sans font-bold uppercase tracking-widest text-gray-500 hover:text-teal-400 transition-colors"
@@ -290,7 +335,8 @@ const BlogReader = ({ token }) => {
         Back to Front Page
       </button>
 
-      <article>
+      {/* --- Blog Article --- */}
+      <article className="mb-16">
         <header className="mb-10 text-center">
           <div className="flex justify-center mb-6">
             <span className="px-3 py-1 border border-teal-900 text-teal-500 text-[10px] uppercase tracking-widest font-sans">
@@ -335,6 +381,75 @@ const BlogReader = ({ token }) => {
           </div>
         </div>
       </article>
+
+      {/* --- Comments Section --- */}
+      <section className="max-w-3xl mx-auto mt-12 pt-12 border-t border-gray-800">
+        <div className="flex items-center gap-3 mb-8 text-teal-500">
+            <MessageSquare className="w-5 h-5" />
+            <h3 className="font-newspaper-title text-2xl text-gray-200">
+              Reader Commentary
+            </h3>
+            <span className="text-gray-600 text-sm font-sans ml-2">({comments.length})</span>
+        </div>
+
+        {/* Comment Form - Always Visible now since User is guaranteed logged in */}
+        <form onSubmit={handlePostComment} className="mb-12 bg-gray-900/50 p-6 rounded border border-gray-800">
+            <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-3">
+              Add your voice
+            </label>
+            <textarea
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Write a respectful comment..."
+              className="w-full bg-gray-950 text-gray-300 border border-gray-800 rounded p-4 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all font-newspaper-body text-lg min-h-[100px] resize-y placeholder:text-gray-700"
+              required
+            />
+            <div className="flex justify-end mt-4">
+              <button
+                type="submit"
+                disabled={submittingComment || !newComment.trim()}
+                className="flex items-center gap-2 px-6 py-2 bg-teal-900/30 text-teal-400 border border-teal-900/50 rounded hover:bg-teal-900/50 hover:text-teal-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-xs font-bold uppercase tracking-widest"
+              >
+                {submittingComment ? (
+                  <>Processing...</>
+                ) : (
+                  <>
+                    Post Comment <Send className="w-3 h-3" />
+                  </>
+                )}
+              </button>
+            </div>
+        </form>
+
+        {/* Comments List */}
+        <div className="space-y-8">
+          {comments.length === 0 ? (
+            <p className="text-gray-600 text-center italic font-newspaper-body">
+              No comments yet. Be the first to share your thoughts.
+            </p>
+          ) : (
+            comments.map((comment) => (
+              <div key={comment.id} className="group animate-slide-up">
+                <div className="flex items-baseline justify-between mb-2">
+                  <h4 className="text-teal-500 font-sans font-bold text-xs uppercase tracking-wider">
+                    @{comment.username}
+                  </h4>
+                  <span className="text-gray-600 text-[10px] uppercase tracking-widest font-sans">
+                    {new Date(comment.created_at).toLocaleDateString(undefined, {
+                      month: 'short', day: 'numeric', year: 'numeric'
+                    })}
+                  </span>
+                </div>
+                <div className="pl-4 border-l-2 border-gray-800 group-hover:border-teal-900 transition-colors">
+                  <p className="text-gray-300 font-newspaper-body text-lg leading-relaxed">
+                    {comment.content}
+                  </p>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </section>
     </div>
   );
 };
