@@ -199,7 +199,7 @@ const BlogList = ({ blogs }) => {
         </h1>
         <div className="flex items-center justify-center space-x-4 text-teal-500 font-sans text-xs tracking-widest uppercase">
           <span className="h-px w-8 bg-teal-800"></span>
-          <span className="font-newspaper-title text-lg text-white italic">
+          <span className="font-newspaper-title text-lg text-white ">
             Unfiltered writes to the main branch
           </span>
           <span className="h-px w-8 bg-teal-800"></span>
