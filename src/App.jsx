@@ -188,17 +188,12 @@ const Auth = ({ onLogin }) => {
 };
 
 // 2. Blog List
-const BlogList = ({ blogs = [] }) => {
-  const navigate = (path) => {
-    console.log('Navigate to:', path);
-  };
+const BlogList = ({ blogs }) => {
+  const navigate = useNavigate();
 
   return (
-    // 1. PARENT: Added h-screen, flex, flex-col to force full height layout
-    <div className="animate-slide-up max-w-8xl mx-auto px-4 h-screen flex flex-col">
-      
-      {/* 2. HEADER: Removed 'sticky'. Added 'flex-shrink-0' so it never collapses */}
-      <div className="z-10 bg-gray-950 text-center border-b-4 border-double border-gray-700 pb-8 pt-8 mb-8 flex-shrink-0">
+    <div className="space-y-12 animate-slide-up max-w-8xl mx-auto px-4">
+      <div className="text-center border-b-4 border-double border-gray-700 pb-8">
         <h1 className="font-newspaper-title text-6xl md:text-7xl font-bold text-white tracking-tight mb-4">
           ROOT ACCESS
         </h1>
@@ -211,47 +206,42 @@ const BlogList = ({ blogs = [] }) => {
         </div>
       </div>
 
-      {/* 3. SCROLLABLE AREA: Added a wrapper with 'flex-1 overflow-y-auto' */}
-      <div className="flex-1 overflow-y-auto pb-8"> 
-        {blogs.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 text-center opacity-60">
-            <div className="font-newspaper-title text-2xl text-gray-500 italic">
-              "Silence is the ultimate weapon of power."
-            </div>
-            <p className="font-sans text-xs mt-2 text-gray-600 uppercase tracking-widest">
-              No entries found
-            </p>
+      {blogs.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-24 text-center opacity-60">
+          <div className="font-newspaper-title text-2xl text-gray-500 italic">
+            "Silence is the ultimate weapon of power."
           </div>
-        ) : (
-          <div className="grid gap-px bg-gray-800 border-t border-b border-gray-800">
-            {blogs.map((blog, idx) => (
-              <div
-                key={blog.id}
-                onClick={() => navigate(`/blog/${blog.id}`)}
-                className="group relative flex flex-col md:flex-row md:items-baseline md:justify-between cursor-pointer bg-gray-950 p-8 transition-all duration-300 hover:bg-gray-900"
-                style={{ animationDelay: `${idx * 50}ms` }}
-              >
-                <div className="font-newspaper-body text-sm font-bold text-gray-500 mb-2 md:mb-0 md:w-32 flex-shrink-0 group-hover:text-teal-500 transition-colors">
-                  {new Date(blog.created_at).toLocaleDateString(undefined, {
-                    month: "short",
-                    day: "numeric",
-                  })}
-                </div>
-
-                <h3 className="font-newspaper-title text-3xl md:text-4xl text-gray-200 group-hover:text-white group-hover:underline decoration-1 underline-offset-8 decoration-teal-600/50 transition-all flex-grow pr-8">
-                  {blog.title}
-                </h3>
-
-                <div className="hidden md:block opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-x-[-10px] group-hover:translate-x-0">
-                  {/* Assuming you have the ChevronRight icon imported */}
-                  {/* <ChevronRight className="h-6 w-6 text-teal-500" /> */}
-                  <span>→</span>
-                </div>
+          <p className="font-sans text-xs mt-2 text-gray-600 uppercase tracking-widest">
+            No entries found
+          </p>
+        </div>
+      ) : (
+        <div className="grid gap-px bg-gray-800 border-t border-b border-gray-800">
+          {blogs.map((blog, idx) => (
+            <div
+              key={blog.id}
+              onClick={() => navigate(`/blog/${blog.id}`)}
+              className="group relative flex flex-col md:flex-row md:items-baseline md:justify-between cursor-pointer bg-gray-950 p-8 transition-all duration-300 hover:bg-gray-900"
+              style={{ animationDelay: `${idx * 50}ms` }}
+            >
+              <div className="font-newspaper-body text-sm font-bold text-gray-500 mb-2 md:mb-0 md:w-32 flex-shrink-0 group-hover:text-teal-500 transition-colors">
+                {new Date(blog.created_at).toLocaleDateString(undefined, {
+                  month: "short",
+                  day: "numeric",
+                })}
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+
+              <h3 className="font-newspaper-title text-3xl md:text-4xl text-gray-200 group-hover:text-white group-hover:underline decoration-1 underline-offset-8 decoration-teal-600/50 transition-all flex-grow pr-8">
+                {blog.title}
+              </h3>
+
+              <div className="hidden md:block opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-x-[-10px] group-hover:translate-x-0">
+                <ChevronRight className="h-6 w-6 text-teal-500" />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
