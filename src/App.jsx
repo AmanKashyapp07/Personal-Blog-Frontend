@@ -188,12 +188,14 @@ const Auth = ({ onLogin }) => {
 };
 
 // 2. Blog List
-const BlogList = ({ blogs }) => {
-  const navigate = useNavigate();
+const BlogList = ({ blogs = [] }) => {
+  const navigate = (path) => {
+    console.log('Navigate to:', path);
+  };
 
   return (
-    <div className="space-y-12 animate-slide-up max-w-8xl mx-auto px-4">
-      <div className="text-center border-b-4 border-double border-gray-700 pb-8">
+    <div className="animate-slide-up max-w-8xl mx-auto px-4">
+      <div className="sticky top-0 z-10 bg-gray-950 text-center border-b-4 border-double border-gray-700 pb-8 pt-8 mb-12">
         <h1 className="font-newspaper-title text-6xl md:text-7xl font-bold text-white tracking-tight mb-4">
           ROOT ACCESS
         </h1>
