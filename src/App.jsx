@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
-  BrowserRouter, // IMPORTED DIRECTLY NOW
+  BrowserRouter,
   Routes,
   Route,
   Link,
@@ -8,7 +8,6 @@ import {
   useParams,
   Navigate,
   useLocation,
-  
 } from "react-router-dom";
 import {
   PenTool,
@@ -18,8 +17,10 @@ import {
   ArrowLeft,
   Loader2,
   BookOpen,
-  MessageSquare, // <--- You were missing this
+  MessageSquare,
   Send,
+  Search, // <--- Added Search Icon
+  X,      // <--- Added X Icon for clearing search
 } from "lucide-react";
 
 // --- IMAGES ---
@@ -190,55 +191,112 @@ const Auth = ({ onLogin }) => {
   );
 };
 
-// 2. Blog List
+// 2. Blog List (UPDATED WITH SEARCH)
+// 2. Blog List (Redesigned Search)
 const BlogList = ({ blogs }) => {
   const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredBlogs = blogs.filter((blog) =>
+    blog.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
-    <div className="space-y-12 animate-slide-up max-w-8xl mx-auto px-4">
-      <div className="text-center border-b-4 border-double border-gray-700 pb-8">
-        <h1 className="font-newspaper-title text-6xl md:text-7xl font-bold text-white tracking-tight mb-4">
-          ROOT ACCESS
-        </h1>
-        <div className="flex items-center justify-center space-x-4 text-teal-500 font-sans text-xs tracking-widest uppercase">
-          <span className="h-px w-8 bg-teal-800"></span>
-          <span className="font-newspaper-title text-lg text-white ">
-            Unfiltered writes to the main branch
-          </span>
-          <span className="h-px w-8 bg-teal-800"></span>
+    <div className="animate-slide-up max-w-8xl mx-auto px-4 pb-20">
+      
+      {/* --- HEADER SECTION --- */}
+      <div className="relative border-b-4 border-double border-gray-800 pb-12 mb-12 pt-8">
+        
+        {/* Main Title */}
+        <div className="text-center mb-10">
+          <h1 className="font-newspaper-title text-6xl md:text-8xl font-bold text-white tracking-tighter mb-4 drop-shadow-2xl">
+            ROOT ACCESS
+          </h1>
+          
+          <div className="flex items-center justify-center space-x-4 text-teal-600 font-sans text-xs tracking-[0.2em] uppercase opacity-80">
+            <span className="h-px w-12 bg-teal-800"></span>
+            <span className="font-newspaper-body italic text-gray-400">
+              The Unfiltered Archive
+            </span>
+            <span className="h-px w-12 bg-teal-800"></span>
+          </div>
+        </div>
+
+        {/* New Centered Search Bar */}
+        <div className="max-w-2xl mx-auto relative group z-10">
+          <div className="relative transition-transform duration-300 group-focus-within:scale-[1.02]">
+            
+            {/* Search Icon */}
+            <div className="absolute left-5 top-1/2 -translate-y-1/2 pointer-events-none">
+              <Search className="h-5 w-5 text-gray-500 group-focus-within:text-teal-400 transition-colors" />
+            </div>
+
+            {/* The Input Field */}
+            <input 
+              type="text" 
+              placeholder="Search by headline..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-gray-950/80 backdrop-blur-md border border-gray-700 text-gray-100 pl-14 pr-12 py-4 rounded-sm shadow-2xl focus:border-teal-500 focus:ring-1 focus:ring-teal-500/50 focus:bg-black transition-all font-newspaper-body text-lg placeholder:text-gray-600 placeholder:italic"
+            />
+
+            {/* Clear Button (X) */}
+            {searchTerm && (
+              <button 
+                onClick={() => setSearchTerm("")}
+                className="absolute right-4 top-1/2 -translate-y-1/2 p-1 text-gray-500 hover:text-white hover:bg-gray-800 rounded-full transition-all"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
-      {blogs.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24 text-center opacity-60">
-          <div className="font-newspaper-title text-2xl text-gray-500 italic">
-            "Silence is the ultimate weapon of power."
+      {/* --- SEARCH RESULTS FEEDBACK --- */}
+      {searchTerm && (
+         <div className="text-center mb-8 animate-slide-up">
+            <span className="inline-block px-3 py-1 border border-teal-900/50 bg-teal-900/10 rounded-full font-sans text-[10px] font-bold text-teal-500 uppercase tracking-widest">
+               Found {filteredBlogs.length} Article{filteredBlogs.length !== 1 && 's'}
+            </span>
+         </div>
+      )}
+
+      {/* --- BLOG GRID --- */}
+      {filteredBlogs.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 text-center opacity-60 bg-gray-900/30 border border-gray-800 border-dashed rounded-lg">
+          <div className="font-newspaper-title text-3xl text-gray-500 italic mb-2">
+            {searchTerm ? "No matching records." : "The archives are empty."}
           </div>
-          <p className="font-sans text-xs mt-2 text-gray-600 uppercase tracking-widest">
-            No entries found
+          <p className="font-sans text-xs text-gray-600 uppercase tracking-widest">
+            {searchTerm ? "Try a broader keyword" : "Check back later"}
           </p>
         </div>
       ) : (
-        <div className="grid gap-px bg-gray-800 border-t border-b border-gray-800">
-          {blogs.map((blog, idx) => (
+        <div className="grid gap-px bg-gray-800 border-t border-b border-gray-800 shadow-2xl">
+          {filteredBlogs.map((blog, idx) => (
             <div
               key={blog.id}
               onClick={() => navigate(`/blog/${blog.id}`)}
-              className="group relative flex flex-col md:flex-row md:items-baseline md:justify-between cursor-pointer bg-gray-950 p-8 transition-all duration-300 hover:bg-gray-900"
+              className="group relative flex flex-col md:flex-row md:items-baseline md:justify-between cursor-pointer bg-gray-950 p-8 transition-all duration-300 hover:bg-gray-900 hover:pl-10"
               style={{ animationDelay: `${idx * 50}ms` }}
             >
-              <div className="font-newspaper-body text-sm font-bold text-gray-500 mb-2 md:mb-0 md:w-32 flex-shrink-0 group-hover:text-teal-500 transition-colors">
+              {/* Date */}
+              <div className="font-newspaper-body text-sm font-bold text-gray-600 mb-2 md:mb-0 md:w-40 flex-shrink-0 group-hover:text-teal-500 transition-colors">
                 {new Date(blog.created_at).toLocaleDateString(undefined, {
+      
                   month: "short",
                   day: "numeric",
                 })}
               </div>
 
-              <h3 className="font-newspaper-title text-3xl md:text-4xl text-gray-200 group-hover:text-white group-hover:underline decoration-1 underline-offset-8 decoration-teal-600/50 transition-all flex-grow pr-8">
+              {/* Title */}
+              <h3 className="font-newspaper-title text-3xl md:text-4xl text-gray-300 group-hover:text-white group-hover:underline decoration-1 underline-offset-8 decoration-teal-600/50 transition-all flex-grow pr-8 leading-tight">
                 {blog.title}
               </h3>
 
-              <div className="hidden md:block opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-x-[-10px] group-hover:translate-x-0">
+              {/* Arrow Icon */}
+              <div className="hidden md:flex items-center justify-end opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-[-20px] group-hover:translate-x-0 w-12">
                 <ChevronRight className="h-6 w-6 text-teal-500" />
               </div>
             </div>
@@ -795,7 +853,6 @@ const MainApp = () => {
 
 // --- ROOT APP ---
 export default function App() {
-  // We use BrowserRouter directly here to fix the "not defined" error
   return (
     <BrowserRouter>
       <MainApp />
