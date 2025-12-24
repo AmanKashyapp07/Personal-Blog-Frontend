@@ -308,7 +308,7 @@ const BlogList = ({ blogs }) => {
 };
 
 // 3. Blog Reader
-const BlogReader = ({ token }) => {
+const BlogReader = ({ token, currentUser }) => { // Added currentUser prop
   const { id } = useParams();
   const navigate = useNavigate();
   
@@ -320,17 +320,16 @@ const BlogReader = ({ token }) => {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
   const [submittingComment, setSubmittingComment] = useState(false);
+  const [deletingId, setDeletingId] = useState(null); // To show loading state on delete button
 
   // Initial Data Fetch (Blog + Comments)
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // 1. Fetch Blog Details
         const blogData = await apiCall(`/api/blogs/${id}`, "GET", null, token);
         setBlog(blogData);
 
-        // 2. Fetch Comments
         const commentsData = await apiCall(`/api/blogs/${id}/comments`, "GET", null, token);
         setComments(commentsData);
 
@@ -352,19 +351,36 @@ const BlogReader = ({ token }) => {
     setSubmittingComment(true);
     try {
       const payload = { content: newComment };
-
-      // Post the comment
       await apiCall(`/api/blogs/${id}/comments`, "POST", payload, token);
-
-      // Refresh comments immediately to show the new one
+      
       const updatedComments = await apiCall(`/api/blogs/${id}/comments`, "GET", null, token);
       setComments(updatedComments);
-      setNewComment(""); // Clear input
+      setNewComment(""); 
     } catch (err) {
       console.error("Failed to post comment:", err);
-      alert("Failed to post comment. Please try again.");
+      alert("Failed to post comment.");
     } finally {
       setSubmittingComment(false);
+    }
+  };
+
+  // --- NEW: Handle Delete Comment ---
+  const handleDeleteComment = async (commentId) => {
+    if (!window.confirm("Are you sure you want to delete this comment?")) return;
+
+    setDeletingId(commentId);
+    try {
+      // API call to delete the comment
+      // Adjust endpoint if your backend route is different (e.g., /api/comments/${commentId})
+      await apiCall(`/api/blogs/${id}/comments/${commentId}`, "DELETE", null, token);
+
+      // Remove from local state immediately
+      setComments((prev) => prev.filter((c) => c.id !== commentId));
+    } catch (err) {
+      console.error("Failed to delete comment:", err);
+      alert("Failed to delete comment.");
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -381,6 +397,10 @@ const BlogReader = ({ token }) => {
         Page intentionally left blank.
       </div>
     );
+
+  // Check if current user is the blog author
+  // Ensure your blog object from backend includes 'author_id'
+  const isBlogAuthor = currentUser && blog.author_id === currentUser.id;
 
   return (
     <div className="mx-auto max-w-7xl animate-slide-up px-4 pb-20">
@@ -450,7 +470,7 @@ const BlogReader = ({ token }) => {
             <span className="text-gray-600 text-sm font-sans ml-2">({comments.length})</span>
         </div>
 
-        {/* Comment Form - Always Visible now since User is guaranteed logged in */}
+        {/* Comment Form */}
         <form onSubmit={handlePostComment} className="mb-12 bg-gray-900/50 p-6 rounded border border-gray-800">
             <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-3">
               Add your voice
@@ -487,17 +507,36 @@ const BlogReader = ({ token }) => {
             </p>
           ) : (
             comments.map((comment) => (
-              <div key={comment.id} className="group animate-slide-up">
+              <div key={comment.id} className="group animate-slide-up relative">
                 <div className="flex items-baseline justify-between mb-2">
-                  <h4 className="text-teal-500 font-sans font-bold text-xs uppercase tracking-wider">
-                    @{comment.username}
-                  </h4>
-                  <span className="text-gray-600 text-[10px] uppercase tracking-widest font-sans">
-                    {new Date(comment.created_at).toLocaleDateString(undefined, {
-                      month: 'short', day: 'numeric', year: 'numeric'
-                    })}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-teal-500 font-sans font-bold text-xs uppercase tracking-wider">
+                      @{comment.username}
+                    </h4>
+                    <span className="text-gray-600 text-[10px] uppercase tracking-widest font-sans">
+                      {new Date(comment.created_at).toLocaleDateString(undefined, {
+                        month: 'short', day: 'numeric', year: 'numeric'
+                      })}
+                    </span>
+                  </div>
+
+                  {/* --- DELETE BUTTON (Only visible if Blog Author == Current User) --- */}
+                  {isBlogAuthor && (
+                    <button 
+                      onClick={() => handleDeleteComment(comment.id)}
+                      disabled={deletingId === comment.id}
+                      className="p-1 text-gray-600 hover:text-red-500 transition-colors duration-200"
+                      title="Delete this comment"
+                    >
+                      {deletingId === comment.id ? (
+                        <Loader2 className="w-4 h-4 animate-spin text-red-500" />
+                      ) : (
+                        <Trash2 className="w-4 h-4" />
+                      )}
+                    </button>
+                  )}
                 </div>
+
                 <div className="pl-4 border-l-2 border-gray-800 group-hover:border-teal-900 transition-colors">
                   <p className="text-gray-300 font-newspaper-body text-lg leading-relaxed">
                     {comment.content}
