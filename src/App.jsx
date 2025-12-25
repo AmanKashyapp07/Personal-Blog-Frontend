@@ -26,6 +26,8 @@ import {
 
 // --- IMAGES ---
 import profileIcon from "./profile2.png";
+import darkProfileIcon from "./dark_.png";
+
 import myBackground from "./myBg.jpg";
 
 // --- ENV ---
@@ -911,7 +913,7 @@ const Layout = ({ children, user, handleLogout }) => {
                       }`}
                     >
                       <img
-                        src={profileIcon}
+                        src={theme === 'dark' ? profileIcon : darkProfileIcon}
                         alt="Admin"
                         className="h-10 w-10 rounded-sm object-cover grayscale hover:grayscale-0 transition-all"
                       />
