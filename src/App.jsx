@@ -276,8 +276,7 @@ const BlogList = ({ blogs }) => {
         {/* Main Title */}
         <div className="text-center mb-10">
           <h1 className={`font-newspaper-title text-6xl md:text-8xl font-bold tracking-tighter mb-4 drop-shadow-2xl ${mainTitleColor}`}>
-            ROOT ACCESS
-          </h1>
+JOURNAL          </h1>
 
           <div className="flex items-center justify-center space-x-4 text-teal-600 font-sans text-xs tracking-[0.2em] uppercase opacity-80">
             <span className="h-px w-12 bg-teal-800"></span>
