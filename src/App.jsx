@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   BrowserRouter,
   Routes,
@@ -20,7 +20,7 @@ import {
   MessageSquare,
   Send,
   Search, // <--- Added Search Icon
-  X,      // <--- Added X Icon for clearing search
+  X, // <--- Added X Icon for clearing search
 } from "lucide-react";
 
 // --- IMAGES ---
@@ -38,8 +38,12 @@ const apiCall = async (endpoint, method = "GET", body = null, token = null) => {
   const config = {
     method,
     headers,
-    body: body ? JSON.stringify(body) : undefined,
   };
+
+  // Only add body if it exists AND method is not GET/DELETE
+  if (body && method !== "GET" && method !== "DELETE") {
+    config.body = JSON.stringify(body);
+  }
 
   const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
 
@@ -128,7 +132,9 @@ const Auth = ({ onLogin }) => {
           </h2>
           <div className="h-px w-24 bg-gray-600 mx-auto my-4"></div>
           <p className="font-newspaper-body text-gray-400 italic">
-            {isLogin ? "Please identify yourself." : "Join our readership today."}
+            {isLogin
+              ? "Please identify yourself."
+              : "Join our readership today."}
           </p>
         </div>
 
@@ -173,7 +179,13 @@ const Auth = ({ onLogin }) => {
             disabled={loading}
             className="group font-newspaper-title text-lg relative flex w-full justify-center bg-gray-100 py-3 font-bold text-gray-900 hover:bg-teal-500 hover:text-white disabled:opacity-50 transition-all duration-300"
           >
-            {loading ? <Loader2 className="animate-spin h-6 w-6" /> : isLogin ? "Access Archives" : "Register"}
+            {loading ? (
+              <Loader2 className="animate-spin h-6 w-6" />
+            ) : isLogin ? (
+              "Access Archives"
+            ) : (
+              "Register"
+            )}
           </button>
         </form>
 
@@ -183,7 +195,9 @@ const Auth = ({ onLogin }) => {
             onClick={() => setIsLogin(!isLogin)}
             className="font-newspaper-body text-sm text-gray-500 hover:text-teal-400 hover:underline underline-offset-4 transition-colors italic"
           >
-            {isLogin ? "No credentials? Apply here." : "Already subscribed? Login."}
+            {isLogin
+              ? "No credentials? Apply here."
+              : "Already subscribed? Login."}
           </button>
         </div>
       </div>
@@ -203,16 +217,14 @@ const BlogList = ({ blogs }) => {
 
   return (
     <div className="animate-slide-up max-w-8xl mx-auto px-4 pb-20">
-      
       {/* --- HEADER SECTION --- */}
       <div className="relative border-b-4 border-double border-gray-800 pb-12 mb-12 pt-8">
-        
         {/* Main Title */}
         <div className="text-center mb-10">
           <h1 className="font-newspaper-title text-6xl md:text-8xl font-bold text-white tracking-tighter mb-4 drop-shadow-2xl">
             ROOT ACCESS
           </h1>
-          
+
           <div className="flex items-center justify-center space-x-4 text-teal-600 font-sans text-xs tracking-[0.2em] uppercase opacity-80">
             <span className="h-px w-12 bg-teal-800"></span>
             <span className="font-newspaper-body italic text-gray-400">
@@ -225,16 +237,15 @@ const BlogList = ({ blogs }) => {
         {/* New Centered Search Bar */}
         <div className="max-w-2xl mx-auto relative group z-10">
           <div className="relative transition-transform duration-300 group-focus-within:scale-[1.02]">
-            
             {/* Search Icon */}
             <div className="absolute left-5 top-1/2 -translate-y-1/2 pointer-events-none">
               <Search className="h-5 w-5 text-gray-500 group-focus-within:text-teal-400 transition-colors" />
             </div>
 
             {/* The Input Field */}
-            <input 
-              type="text" 
-              placeholder="Search by headline..." 
+            <input
+              type="text"
+              placeholder="Search by headline..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full bg-gray-950/80 backdrop-blur-md border border-gray-700 text-gray-100 pl-14 pr-12 py-4 rounded-sm shadow-2xl focus:border-teal-500 focus:ring-1 focus:ring-teal-500/50 focus:bg-black transition-all font-newspaper-body text-lg placeholder:text-gray-600 placeholder:italic"
@@ -242,7 +253,7 @@ const BlogList = ({ blogs }) => {
 
             {/* Clear Button (X) */}
             {searchTerm && (
-              <button 
+              <button
                 onClick={() => setSearchTerm("")}
                 className="absolute right-4 top-1/2 -translate-y-1/2 p-1 text-gray-500 hover:text-white hover:bg-gray-800 rounded-full transition-all"
               >
@@ -255,11 +266,12 @@ const BlogList = ({ blogs }) => {
 
       {/* --- SEARCH RESULTS FEEDBACK --- */}
       {searchTerm && (
-         <div className="text-center mb-8 animate-slide-up">
-            <span className="inline-block px-3 py-1 border border-teal-900/50 bg-teal-900/10 rounded-full font-sans text-[10px] font-bold text-teal-500 uppercase tracking-widest">
-               Found {filteredBlogs.length} Article{filteredBlogs.length !== 1 && 's'}
-            </span>
-         </div>
+        <div className="text-center mb-8 animate-slide-up">
+          <span className="inline-block px-3 py-1 border border-teal-900/50 bg-teal-900/10 rounded-full font-sans text-[10px] font-bold text-teal-500 uppercase tracking-widest">
+            Found {filteredBlogs.length} Article
+            {filteredBlogs.length !== 1 && "s"}
+          </span>
+        </div>
       )}
 
       {/* --- BLOG GRID --- */}
@@ -284,7 +296,6 @@ const BlogList = ({ blogs }) => {
               {/* Date */}
               <div className="font-newspaper-body text-sm font-bold text-gray-600 mb-2 md:mb-0 md:w-40 flex-shrink-0 group-hover:text-teal-500 transition-colors">
                 {new Date(blog.created_at).toLocaleDateString(undefined, {
-      
                   month: "short",
                   day: "numeric",
                 })}
@@ -308,54 +319,54 @@ const BlogList = ({ blogs }) => {
 };
 
 // 3. Blog Reader
-const BlogReader = ({ token, currentUser }) => { // Added currentUser prop
+const BlogReader = ({ token, currentUser }) => {
   const { id } = useParams();
   const navigate = useNavigate();
-  
+
   // Blog State
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
-  
+
   // Comment State
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
   const [submittingComment, setSubmittingComment] = useState(false);
-  const [deletingId, setDeletingId] = useState(null); // To show loading state on delete button
+  const [deletingId, setDeletingId] = useState(null);
 
-  // Initial Data Fetch (Blog + Comments)
+  // Initial Data Fetch
   useEffect(() => {
+    if (!id || !token) return;
+
     const fetchData = async () => {
       try {
         setLoading(true);
+        // Fetch Blog
         const blogData = await apiCall(`/api/blogs/${id}`, "GET", null, token);
         setBlog(blogData);
 
+        // Fetch Comments
         const commentsData = await apiCall(`/api/blogs/${id}/comments`, "GET", null, token);
         setComments(commentsData);
-
       } catch (err) {
         console.error("Error fetching data:", err);
       } finally {
         setLoading(false);
       }
     };
-    
-    if (id) fetchData();
+
+    fetchData();
   }, [id, token]);
 
-  // Handle Post Comment
   const handlePostComment = async (e) => {
     e.preventDefault();
     if (!newComment.trim()) return;
 
     setSubmittingComment(true);
     try {
-      const payload = { content: newComment };
-      await apiCall(`/api/blogs/${id}/comments`, "POST", payload, token);
-      
+      await apiCall(`/api/blogs/${id}/comments`, "POST", { content: newComment }, token);
       const updatedComments = await apiCall(`/api/blogs/${id}/comments`, "GET", null, token);
       setComments(updatedComments);
-      setNewComment(""); 
+      setNewComment("");
     } catch (err) {
       console.error("Failed to post comment:", err);
       alert("Failed to post comment.");
@@ -364,18 +375,13 @@ const BlogReader = ({ token, currentUser }) => { // Added currentUser prop
     }
   };
 
-  // --- NEW: Handle Delete Comment ---
   const handleDeleteComment = async (commentId) => {
     if (!window.confirm("Are you sure you want to delete this comment?")) return;
 
     setDeletingId(commentId);
     try {
-      // API call to delete the comment
-      // Adjust endpoint if your backend route is different (e.g., /api/comments/${commentId})
       await apiCall(`/api/blogs/${id}/comments/${commentId}`, "DELETE", null, token);
-
-      // Remove from local state immediately
-      setComments((prev) => prev.filter((c) => c.id !== commentId));
+      setComments((prev) => prev.filter((c) => Number(c.id) !== Number(commentId)));
     } catch (err) {
       console.error("Failed to delete comment:", err);
       alert("Failed to delete comment.");
@@ -384,24 +390,36 @@ const BlogReader = ({ token, currentUser }) => { // Added currentUser prop
     }
   };
 
-  if (loading)
+  const isBlogAuthor = useMemo(() => {
+    if (!currentUser || !blog) return false;
+    return Number(blog.author_id) === Number(currentUser.id);
+  }, [currentUser, blog]);
+
+  // ------------------------------------------------------------------
+  // FIX: These checks must be here to prevent rendering before data exists
+  // ------------------------------------------------------------------
+  
+  // 1. Show Loader while fetching
+  if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-teal-500" />
       </div>
     );
+  }
 
-  if (!blog)
+  // 2. Show Error/Blank if fetching finished but blog is still null
+  if (!blog) {
     return (
       <div className="p-12 text-center font-newspaper-title text-2xl text-gray-500">
-        Page intentionally left blank.
+        Page intentionally left blank (Blog not found).
       </div>
     );
+  }
 
-  // Check if current user is the blog author
-  // Ensure your blog object from backend includes 'author_id'
-  const isBlogAuthor = currentUser && blog.author_id === currentUser.id;
-
+  // ------------------------------------------------------------------
+  // Main Render (Only runs if blog is not null)
+  // ------------------------------------------------------------------
   return (
     <div className="mx-auto max-w-7xl animate-slide-up px-4 pb-20">
       {/* --- Navigation --- */}
@@ -446,9 +464,11 @@ const BlogReader = ({ token, currentUser }) => { // Added currentUser prop
         </header>
 
         <div className="font-newspaper-body text-xl leading-relaxed text-gray-300 space-y-6 first-letter:text-6xl first-letter:font-bold first-letter:text-teal-500 first-letter:float-left first-letter:mr-3 first-letter:mt-[-10px]">
-          {blog.content.split("\n").map((paragraph, idx) =>
-            paragraph ? <p key={idx}>{paragraph}</p> : <br key={idx} />
-          )}
+          {blog.content
+            .split("\n")
+            .map((paragraph, idx) =>
+              paragraph ? <p key={idx}>{paragraph}</p> : <br key={idx} />
+            )}
         </div>
 
         <div className="mt-16 pt-8 border-t border-gray-800 text-center">
@@ -463,40 +483,45 @@ const BlogReader = ({ token, currentUser }) => { // Added currentUser prop
       {/* --- Comments Section --- */}
       <section className="max-w-3xl mx-auto mt-12 pt-12 border-t border-gray-800">
         <div className="flex items-center gap-3 mb-8 text-teal-500">
-            <MessageSquare className="w-5 h-5" />
-            <h3 className="font-newspaper-title text-2xl text-gray-200">
-              Reader Commentary
-            </h3>
-            <span className="text-gray-600 text-sm font-sans ml-2">({comments.length})</span>
+          <MessageSquare className="w-5 h-5" />
+          <h3 className="font-newspaper-title text-2xl text-gray-200">
+            Reader Commentary
+          </h3>
+          <span className="text-gray-600 text-sm font-sans ml-2">
+            ({comments.length})
+          </span>
         </div>
 
         {/* Comment Form */}
-        <form onSubmit={handlePostComment} className="mb-12 bg-gray-900/50 p-6 rounded border border-gray-800">
-            <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-3">
-              Add your voice
-            </label>
-            <textarea
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Write a respectful comment..."
-              className="w-full bg-gray-950 text-gray-300 border border-gray-800 rounded p-4 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all font-newspaper-body text-lg min-h-[100px] resize-y placeholder:text-gray-700"
-              required
-            />
-            <div className="flex justify-end mt-4">
-              <button
-                type="submit"
-                disabled={submittingComment || !newComment.trim()}
-                className="flex items-center gap-2 px-6 py-2 bg-teal-900/30 text-teal-400 border border-teal-900/50 rounded hover:bg-teal-900/50 hover:text-teal-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-xs font-bold uppercase tracking-widest"
-              >
-                {submittingComment ? (
-                  <>Processing...</>
-                ) : (
-                  <>
-                    Post Comment <Send className="w-3 h-3" />
-                  </>
-                )}
-              </button>
-            </div>
+        <form
+          onSubmit={handlePostComment}
+          className="mb-12 bg-gray-900/50 p-6 rounded border border-gray-800"
+        >
+          <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-3">
+            Add your voice
+          </label>
+          <textarea
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            placeholder="Write a respectful comment..."
+            className="w-full bg-gray-950 text-gray-300 border border-gray-800 rounded p-4 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all font-newspaper-body text-lg min-h-[100px] resize-y placeholder:text-gray-700"
+            required
+          />
+          <div className="flex justify-end mt-4">
+            <button
+              type="submit"
+              disabled={submittingComment || !newComment.trim()}
+              className="flex items-center gap-2 px-6 py-2 bg-teal-900/30 text-teal-400 border border-teal-900/50 rounded hover:bg-teal-900/50 hover:text-teal-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-xs font-bold uppercase tracking-widest"
+            >
+              {submittingComment ? (
+                <>Processing...</>
+              ) : (
+                <>
+                  Post Comment <Send className="w-3 h-3" />
+                </>
+              )}
+            </button>
+          </div>
         </form>
 
         {/* Comments List */}
@@ -514,15 +539,20 @@ const BlogReader = ({ token, currentUser }) => { // Added currentUser prop
                       @{comment.username}
                     </h4>
                     <span className="text-gray-600 text-[10px] uppercase tracking-widest font-sans">
-                      {new Date(comment.created_at).toLocaleDateString(undefined, {
-                        month: 'short', day: 'numeric', year: 'numeric'
-                      })}
+                      {new Date(comment.created_at).toLocaleDateString(
+                        undefined,
+                        {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        }
+                      )}
                     </span>
                   </div>
 
-                  {/* --- DELETE BUTTON (Only visible if Blog Author == Current User) --- */}
+                  {/* --- DELETE BUTTON --- */}
                   {isBlogAuthor && (
-                    <button 
+                    <button
                       onClick={() => handleDeleteComment(comment.id)}
                       disabled={deletingId === comment.id}
                       className="p-1 text-gray-600 hover:text-red-500 transition-colors duration-200"
@@ -578,8 +608,12 @@ const AdminDashboard = ({ token, user }) => {
   useEffect(() => {
     fetchBlogs();
   }, []);
-
+if (!token) {
+  alert("You are not authenticated");
+  return;
+}
   const handleDelete = async (id) => {
+    console.log("DELETE TOKEN:", token);
     if (!window.confirm("Permanently remove this record?")) return;
     try {
       await apiCall(`/api/blogs/${id}`, "DELETE", null, token);
@@ -593,7 +627,12 @@ const AdminDashboard = ({ token, user }) => {
     e.preventDefault();
     try {
       if (currentBlog.id) {
-        await apiCall(`/api/blogs/${currentBlog.id}`, "PUT", currentBlog, token);
+        await apiCall(
+          `/api/blogs/${currentBlog.id}`,
+          "PUT",
+          currentBlog,
+          token
+        );
       } else {
         await apiCall("/api/blogs", "POST", currentBlog, token);
       }
@@ -702,7 +741,10 @@ const AdminDashboard = ({ token, user }) => {
             </thead>
             <tbody className="divide-y divide-gray-800 bg-gray-950">
               {blogs.map((blog) => (
-                <tr key={blog.id} className="hover:bg-gray-900 transition-colors">
+                <tr
+                  key={blog.id}
+                  className="hover:bg-gray-900 transition-colors"
+                >
                   <td className="px-6 py-4 font-newspaper-title text-xl text-white">
                     {blog.title}
                   </td>
@@ -873,7 +915,7 @@ const MainApp = () => {
     <Layout user={user} handleLogout={handleLogout}>
       <Routes>
         <Route path="/" element={<BlogList blogs={blogs} />} />
-        <Route path="/blog/:id" element={<BlogReader token={token} />} />
+        <Route path="/blog/:id" element={<BlogReader token={token} currentUser={user}/>} />
         <Route
           path="/admin"
           element={
