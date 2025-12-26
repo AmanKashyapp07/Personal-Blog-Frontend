@@ -276,7 +276,8 @@ const BlogList = ({ blogs }) => {
         {/* Main Title */}
         <div className="text-center mb-10">
           <h1 className={`font-newspaper-title text-6xl md:text-8xl font-bold tracking-tighter mb-4 drop-shadow-2xl ${mainTitleColor}`}>
-JOURNAL          </h1>
+            JOURNAL
+          </h1>
 
           <div className="flex items-center justify-center space-x-4 text-teal-600 font-sans text-xs tracking-[0.2em] uppercase opacity-80">
             <span className="h-px w-12 bg-teal-800"></span>
@@ -346,12 +347,18 @@ JOURNAL          </h1>
               className={`group relative flex flex-col md:flex-row md:items-baseline md:justify-between cursor-pointer p-8 transition-all duration-300 hover:pl-10 ${cardClass}`}
               style={{ animationDelay: `${idx * 50}ms` }}
             >
-              {/* Date */}
-              <div className="font-newspaper-body text-sm font-bold text-gray-500 mb-2 md:mb-0 md:w-40 flex-shrink-0 group-hover:text-teal-600 transition-colors">
-                {new Date(blog.created_at).toLocaleDateString(undefined, {
-                  month: "short",
-                  day: "numeric",
-                })}
+              {/* Left Meta Column: Date & Author */}
+              <div className="mb-2 md:mb-0 md:w-40 flex-shrink-0 flex flex-col">
+                <div className="font-newspaper-body text-sm font-bold text-gray-500 group-hover:text-teal-600 transition-colors">
+                  {new Date(blog.created_at).toLocaleDateString(undefined, {
+                    month: "short",
+                    day: "numeric",
+                  })}
+                </div>
+                {/* Author Name */}
+                <div className={`text-[10px] font-sans uppercase tracking-widest mt-1 opacity-80 ${theme === 'dark' ? 'text-gray-500' : 'text-stone-500'}`}>
+                   {blog.author || "Contributor"}
+                </div>
               </div>
 
               {/* Title */}
