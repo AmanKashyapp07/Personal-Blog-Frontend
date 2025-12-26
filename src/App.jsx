@@ -344,7 +344,8 @@ const BlogList = ({ blogs }) => {
             <div
               key={blog.id}
               onClick={() => navigate(`/blog/${blog.id}`)}
-              className={`group relative flex flex-col md:flex-row md:items-baseline md:justify-between cursor-pointer p-8 transition-all duration-300 hover:pl-10 ${cardClass}`}
+              // Changed p-8 to py-6 px-8 to reduce height. Added items-center for vertical centering.
+              className={`group relative flex flex-col md:flex-row items-center md:justify-between cursor-pointer py-6 px-8 transition-all duration-300 hover:pl-10 ${cardClass}`}
               style={{ animationDelay: `${idx * 50}ms` }}
             >
               {/* Left Meta Column: Date & Author */}
@@ -357,7 +358,7 @@ const BlogList = ({ blogs }) => {
                 </div>
                 {/* Author Name */}
                 <div className={`text-[10px] font-sans uppercase tracking-widest mt-1 opacity-80 ${theme === 'dark' ? 'text-gray-500' : 'text-stone-500'}`}>
-                   {blog.author_name || "Contributor"}
+                   {blog.author || "Contributor"}
                 </div>
               </div>
 
