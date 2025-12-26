@@ -357,7 +357,7 @@ const BlogList = ({ blogs }) => {
                 </div>
                 {/* Author Name */}
                 <div className={`text-[10px] font-sans uppercase tracking-widest mt-1 opacity-80 ${theme === 'dark' ? 'text-gray-500' : 'text-stone-500'}`}>
-                   {blog.author || "Contributor"}
+                   {blog.author_name || "Contributor"}
                 </div>
               </div>
 
