@@ -740,6 +740,10 @@ const AdminDashboard = ({ token, user }) => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  // --- NEW: Share State ---
+  const [activeShareId, setActiveShareId] = useState(null); // Track which blog's share menu is open
+  const [copied, setCopied] = useState(false);
+
   const fetchBlogs = async () => {
     setLoading(true);
     try {
@@ -760,6 +764,7 @@ const AdminDashboard = ({ token, user }) => {
     alert("You are not authenticated");
     return;
   }
+  
   const handleDelete = async (id) => {
     console.log("DELETE TOKEN:", token);
     if (!window.confirm("Permanently remove this record?")) return;
@@ -791,6 +796,15 @@ const AdminDashboard = ({ token, user }) => {
       alert("Save failed");
     }
   };
+
+  // --- NEW: Share Logic ---
+  const handleCopyLink = (blogId) => {
+    // Construct the specific URL for this blog
+    const url = `${window.location.origin}/blog/${blogId}`;
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
   
   // Theme Styles
   const bgPanel = theme === 'dark' ? 'bg-gray-900 border-gray-800' : 'bg-white border-stone-200 shadow-xl';
@@ -801,6 +815,8 @@ const AdminDashboard = ({ token, user }) => {
   const tableHeaderBg = theme === 'dark' ? 'bg-gray-900' : 'bg-stone-100';
   const tableBodyBg = theme === 'dark' ? 'bg-gray-950' : 'bg-white';
   const borderColor = theme === 'dark' ? 'border-gray-800' : 'border-stone-200';
+  // New Styles for Share Popover
+  const textColor = theme === 'dark' ? 'text-gray-300' : 'text-stone-800';
 
   if (isEditing) {
     return (
@@ -859,7 +875,7 @@ const AdminDashboard = ({ token, user }) => {
   }
 
   return (
-    <div className="mx-auto max-w-6xl animate-slide-up px-4">
+    <div className="mx-auto max-w-6xl animate-slide-up px-4 pb-20">
       <div className={`mb-10 flex items-end justify-between border-b-2 pb-4 ${borderColor}`}>
         <div>
           <h1 className={`font-newspaper-title text-4xl italic ${headingColor}`}>
@@ -882,7 +898,8 @@ const AdminDashboard = ({ token, user }) => {
           <Loader2 className="h-8 w-8 animate-spin text-teal-500" />
         </div>
       ) : (
-        <div className={`overflow-hidden border ${borderColor}`}>
+        // Changed overflow-hidden to visible so share popup isn't cut off
+        <div className={`overflow-visible border ${borderColor}`}>
           <table className={`min-w-full divide-y ${borderColor}`}>
             <thead className={tableHeaderBg}>
               <tr>
@@ -898,44 +915,114 @@ const AdminDashboard = ({ token, user }) => {
               </tr>
             </thead>
             <tbody className={`divide-y ${borderColor} ${tableBodyBg}`}>
-              {blogs.map((blog) => (
-                <tr
-                  key={blog.id}
-                  className={`transition-colors ${theme === 'dark' ? 'hover:bg-gray-900' : 'hover:bg-stone-50'}`}
-                >
-                  <td className={`px-6 py-4 font-newspaper-title text-xl ${headingColor}`}>
-                    {blog.title}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap font-newspaper-body text-sm text-gray-500">
-                    {new Date(blog.created_at).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right">
-                    <div className="flex justify-end space-x-4">
-                      <button
-                        onClick={() => navigate(`/blog/${blog.id}`)}
-                        className="text-gray-500 hover:text-teal-500 transition-colors"
-                      >
-                        <BookOpen className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => {
-                          setCurrentBlog(blog);
-                          setIsEditing(true);
-                        }}
-                        className="text-teal-600 hover:text-teal-400 transition-colors"
-                      >
-                        <PenTool className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(blog.id)}
-                        className="text-red-700 hover:text-red-500 transition-colors"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {blogs.map((blog) => {
+                // Generate share URL for this specific row
+                const shareUrl = `${window.location.origin}/blog/${blog.id}`;
+
+                return (
+                  <tr
+                    key={blog.id}
+                    className={`transition-colors ${theme === 'dark' ? 'hover:bg-gray-900' : 'hover:bg-stone-50'}`}
+                  >
+                    <td className={`px-6 py-4 font-newspaper-title text-xl ${headingColor}`}>
+                      {blog.title}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap font-newspaper-body text-sm text-gray-500">
+                      {new Date(blog.created_at).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right relative">
+                      <div className="flex justify-end items-center space-x-4">
+                        
+                        {/* --- NEW: Share Button & Popover --- */}
+                        <div className="relative">
+                          <button
+                            onClick={() => setActiveShareId(activeShareId === blog.id ? null : blog.id)}
+                            className="text-gray-400 hover:text-teal-600 transition-colors pt-1"
+                            title="Share"
+                          >
+                            <Share2 className="h-4 w-4" />
+                          </button>
+
+                          {/* Popover Menu */}
+                          {activeShareId === blog.id && (
+                            <div className={`absolute bottom-full mb-2 right-0 z-50 w-[300px] rounded-xl shadow-2xl overflow-hidden animate-slide-up origin-bottom-right border ${theme === 'dark' ? 'bg-gray-900 border-gray-700' : 'bg-white border-stone-200'}`}>
+                              
+                              <div className={`flex items-center justify-between px-4 py-2 border-b ${borderColor}`}>
+                                <h3 className={`font-sans font-bold text-[10px] uppercase tracking-widest ${headingColor}`}>Share</h3>
+                                <button 
+                                  onClick={() => setActiveShareId(null)}
+                                  className="p-1 rounded-full hover:bg-gray-200/20 text-gray-500"
+                                >
+                                  <X className="w-3 h-3" />
+                                </button>
+                              </div>
+
+                              <div className="p-4">
+                                <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide justify-center">
+                                  {[
+                                    { icon: <Facebook className="w-4 h-4" />, bg: "bg-blue-600", url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}` },
+                                    { icon: <Twitter className="w-3 h-3" />, bg: "bg-black", url: `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(blog.title)}` },
+                                    { icon: <Linkedin className="w-3 h-3" />, bg: "bg-blue-700", url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}` },
+                                    { icon: <LinkIcon className="w-3 h-3" />, bg: "bg-gray-500", url: `mailto:?subject=${encodeURIComponent(blog.title)}&body=${encodeURIComponent(shareUrl)}` },
+                                  ].map((item, idx) => (
+                                    <a
+                                      key={idx}
+                                      href={item.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className={`w-8 h-8 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-110 ${item.bg}`}
+                                    >
+                                      {item.icon}
+                                    </a>
+                                  ))}
+                                </div>
+
+                                <div className={`mt-3 p-1 rounded border flex items-center ${theme === 'dark' ? 'bg-gray-950 border-gray-700' : 'bg-gray-50 border-stone-200'}`}>
+                                  <div className="flex-1 px-2 overflow-hidden">
+                                    <p className={`text-[10px] truncate font-mono ${textColor}`}>{shareUrl}</p>
+                                  </div>
+                                  <button
+                                    onClick={() => handleCopyLink(blog.id)}
+                                    className="p-1.5 rounded bg-teal-600 text-white hover:bg-teal-700 transition-colors"
+                                  >
+                                    {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Existing Actions */}
+                        <button
+                          onClick={() => navigate(`/blog/${blog.id}`)}
+                          className="text-gray-500 hover:text-teal-500 transition-colors"
+                          title="Read"
+                        >
+                          <BookOpen className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            setCurrentBlog(blog);
+                            setIsEditing(true);
+                          }}
+                          className="text-teal-600 hover:text-teal-400 transition-colors"
+                          title="Edit"
+                        >
+                          <PenTool className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(blog.id)}
+                          className="text-red-700 hover:text-red-500 transition-colors"
+                          title="Delete"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
