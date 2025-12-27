@@ -403,7 +403,7 @@ const BlogReader = ({ token, currentUser }) => {
   const [submittingComment, setSubmittingComment] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
 
-  // --- NEW: Share Modal State ---
+  // Share State
   const [showShare, setShowShare] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -464,7 +464,6 @@ const BlogReader = ({ token, currentUser }) => {
     }
   };
 
-  // --- NEW: Share Logic ---
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href);
     setCopied(true);
@@ -557,14 +556,71 @@ const BlogReader = ({ token, currentUser }) => {
             </p>
           </div>
           
-          {/* --- NEW: Share Button Trigger --- */}
-          <div className="mt-8 flex justify-center">
+          {/* --- UPDATED: Share Button Container (Relative for Popover) --- */}
+          <div className="mt-8 flex justify-center relative z-20">
             <button
-              onClick={() => setShowShare(true)}
+              onClick={() => setShowShare(!showShare)}
               className="flex items-center gap-2 px-5 py-2 rounded-full bg-teal-600 text-white hover:bg-teal-700 transition-all font-sans text-xs font-bold uppercase tracking-widest shadow-md hover:shadow-lg hover:-translate-y-0.5"
             >
               <Share2 className="w-4 h-4" /> Share
             </button>
+
+            {/* --- UPDATED: Popover Share Menu (Absolute Position) --- */}
+            {showShare && (
+              <div className={`absolute bottom-full mb-4 left-1/2 -translate-x-1/2 w-[350px] max-w-[90vw] rounded-xl shadow-2xl overflow-hidden animate-slide-up origin-bottom ${theme === 'dark' ? 'bg-gray-900 border border-gray-700' : 'bg-white border border-gray-200'}`}>
+                
+                {/* Popover Header */}
+                <div className={`flex items-center justify-between px-4 py-3 border-b ${borderColor}`}>
+                  <h3 className={`font-sans font-bold text-sm ${headingColor}`}>Share this story</h3>
+                  <button 
+                    onClick={() => setShowShare(false)}
+                    className="p-1 rounded-full hover:bg-gray-200/20 text-gray-500 transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Social Icons */}
+                <div className="p-4">
+                  <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide justify-center">
+                    {[
+                      { icon: <Facebook className="w-5 h-5" />, bg: "bg-blue-600", url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}` },
+                      { icon: <Twitter className="w-4 h-4" />, bg: "bg-black", url: `https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(blog.title)}` },
+                      { icon: <Linkedin className="w-4 h-4" />, bg: "bg-blue-700", url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}` },
+                      { icon: <MessageSquare className="w-4 h-4" />, bg: "bg-green-500", url: `https://wa.me/?text=${encodeURIComponent(blog.title + " " + window.location.href)}` },
+                      { icon: <LinkIcon className="w-4 h-4" />, bg: "bg-gray-500", url: `mailto:?subject=${encodeURIComponent(blog.title)}&body=${encodeURIComponent(window.location.href)}` },
+                    ].map((item, idx) => (
+                      <a
+                        key={idx}
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`w-10 h-10 rounded-full flex items-center justify-center text-white shadow-sm transition-transform hover:scale-110 ${item.bg}`}
+                      >
+                        {item.icon}
+                      </a>
+                    ))}
+                  </div>
+
+                  {/* Copy Link Input */}
+                  <div className={`mt-4 p-1 rounded-md border flex items-center ${theme === 'dark' ? 'bg-gray-950 border-gray-700' : 'bg-gray-100 border-gray-200'}`}>
+                    <div className="flex-1 px-3 py-1 overflow-hidden">
+                      <p className={`text-xs truncate font-mono ${textColor}`}>{window.location.href}</p>
+                    </div>
+                    <button
+                      onClick={handleCopyLink}
+                      className="px-3 py-1.5 rounded bg-teal-600 text-white font-bold text-xs hover:bg-teal-700 transition-colors flex items-center gap-1 m-1"
+                    >
+                      {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                      {copied ? "Copied" : "Copy"}
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Arrow at bottom of popover */}
+                <div className={`absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 rotate-45 border-b border-r ${theme === 'dark' ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'}`}></div>
+              </div>
+            )}
           </div>
 
         </div>
@@ -667,68 +723,6 @@ const BlogReader = ({ token, currentUser }) => {
           )}
         </div>
       </section>
-
-      {/* --- NEW: YouTube Style Share Modal --- */}
-      {showShare && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className={`relative w-full max-w-lg rounded-xl shadow-2xl overflow-hidden ${theme === 'dark' ? 'bg-gray-900 border border-gray-800' : 'bg-white'}`}>
-            
-            {/* Modal Header */}
-            <div className={`flex items-center justify-between px-6 py-4 border-b ${borderColor}`}>
-              <h3 className={`font-sans font-bold text-lg ${headingColor}`}>Share</h3>
-              <button 
-                onClick={() => setShowShare(false)}
-                className="p-2 rounded-full hover:bg-gray-200/20 text-gray-500 transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Social Icons (Horizontal Scroll like YouTube) */}
-            <div className="p-6">
-              <div className="flex items-center gap-4 overflow-x-auto pb-4 scrollbar-hide">
-                {[
-                  { icon: <Facebook className="w-6 h-6" />, label: "Facebook", bg: "bg-blue-600", url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}` },
-                  { icon: <Twitter className="w-5 h-5" />, label: "Twitter", bg: "bg-black", url: `https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(blog.title)}` },
-                  { icon: <Linkedin className="w-5 h-5" />, label: "LinkedIn", bg: "bg-blue-700", url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}` },
-                  { icon: <MessageSquare className="w-5 h-5" />, label: "WhatsApp", bg: "bg-green-500", url: `https://wa.me/?text=${encodeURIComponent(blog.title + " " + window.location.href)}` },
-                  { icon: <LinkIcon className="w-5 h-5" />, label: "Email", bg: "bg-gray-500", url: `mailto:?subject=${encodeURIComponent(blog.title)}&body=${encodeURIComponent(window.location.href)}` },
-                ].map((item, idx) => (
-                  <a
-                    key={idx}
-                    href={item.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex flex-col items-center gap-2 min-w-[70px] group"
-                  >
-                    <div className={`w-14 h-14 rounded-full flex items-center justify-center text-white shadow-md transition-transform group-hover:scale-110 ${item.bg}`}>
-                      {item.icon}
-                    </div>
-                    <span className="text-xs text-gray-500 font-sans font-medium">{item.label}</span>
-                  </a>
-                ))}
-              </div>
-
-              {/* Copy Link Section */}
-              <div className={`mt-6 p-1 rounded-lg border flex items-center ${theme === 'dark' ? 'bg-gray-950 border-gray-700' : 'bg-gray-100 border-gray-200'}`}>
-                <div className="flex-1 px-3 py-2 overflow-hidden">
-                  <p className="text-xs text-gray-500 font-sans font-bold uppercase tracking-wider mb-1">Page Link</p>
-                  <p className={`text-sm truncate font-mono ${textColor}`}>{window.location.href}</p>
-                </div>
-                <button
-                  onClick={handleCopyLink}
-                  className="px-6 py-3 rounded-md bg-teal-600 text-white font-bold text-sm hover:bg-teal-700 transition-colors flex items-center gap-2 m-1"
-                >
-                  {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                  {copied ? "Copied" : "Copy"}
-                </button>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      )}
-
     </div>
   );
 };
