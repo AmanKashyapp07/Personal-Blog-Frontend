@@ -21,11 +21,16 @@ import {
   Send,
   Search,
   X,
-  Lightbulb, // <--- Added Bulb Icon
+  Lightbulb,
+  Share2,
+  Copy,
+  Check,
+  Link as LinkIcon,
+  Facebook,
+  Twitter,
+  Linkedin,
 } from "lucide-react";
-import { 
-  Share2, Copy, Check, X, Link as LinkIcon, Facebook, Twitter, Linkedin 
-} from "lucide-react";
+
 
 // --- IMAGES ---
 import profileIcon from "./profile2.png";
