@@ -23,6 +23,9 @@ import {
   X,
   Lightbulb, // <--- Added Bulb Icon
 } from "lucide-react";
+import { 
+  Share2, Copy, Check, X, Link as LinkIcon, Facebook, Twitter, Linkedin 
+} from "lucide-react";
 
 // --- IMAGES ---
 import profileIcon from "./profile2.png";
@@ -395,6 +398,10 @@ const BlogReader = ({ token, currentUser }) => {
   const [submittingComment, setSubmittingComment] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
 
+  // --- NEW: Share Modal State ---
+  const [showShare, setShowShare] = useState(false);
+  const [copied, setCopied] = useState(false);
+
   // Initial Data Fetch
   useEffect(() => {
     if (!id || !token) return;
@@ -452,6 +459,13 @@ const BlogReader = ({ token, currentUser }) => {
     }
   };
 
+  // --- NEW: Share Logic ---
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   const isBlogAuthor = useMemo(() => {
     if (!currentUser || !blog) return false;
     return Number(blog.author_id) === Number(currentUser.id);
@@ -481,7 +495,7 @@ const BlogReader = ({ token, currentUser }) => {
   }
 
   return (
-    <div className="mx-auto max-w-7xl animate-slide-up px-4 pb-20">
+    <div className="mx-auto max-w-7xl animate-slide-up px-4 pb-20 relative">
       {/* --- Navigation --- */}
       <button
         onClick={() => navigate("/")}
@@ -537,6 +551,17 @@ const BlogReader = ({ token, currentUser }) => {
               End of Blog
             </p>
           </div>
+          
+          {/* --- NEW: Share Button Trigger --- */}
+          <div className="mt-8 flex justify-center">
+            <button
+              onClick={() => setShowShare(true)}
+              className="flex items-center gap-2 px-5 py-2 rounded-full bg-teal-600 text-white hover:bg-teal-700 transition-all font-sans text-xs font-bold uppercase tracking-widest shadow-md hover:shadow-lg hover:-translate-y-0.5"
+            >
+              <Share2 className="w-4 h-4" /> Share
+            </button>
+          </div>
+
         </div>
       </article>
 
@@ -637,6 +662,68 @@ const BlogReader = ({ token, currentUser }) => {
           )}
         </div>
       </section>
+
+      {/* --- NEW: YouTube Style Share Modal --- */}
+      {showShare && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className={`relative w-full max-w-lg rounded-xl shadow-2xl overflow-hidden ${theme === 'dark' ? 'bg-gray-900 border border-gray-800' : 'bg-white'}`}>
+            
+            {/* Modal Header */}
+            <div className={`flex items-center justify-between px-6 py-4 border-b ${borderColor}`}>
+              <h3 className={`font-sans font-bold text-lg ${headingColor}`}>Share</h3>
+              <button 
+                onClick={() => setShowShare(false)}
+                className="p-2 rounded-full hover:bg-gray-200/20 text-gray-500 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Social Icons (Horizontal Scroll like YouTube) */}
+            <div className="p-6">
+              <div className="flex items-center gap-4 overflow-x-auto pb-4 scrollbar-hide">
+                {[
+                  { icon: <Facebook className="w-6 h-6" />, label: "Facebook", bg: "bg-blue-600", url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}` },
+                  { icon: <Twitter className="w-5 h-5" />, label: "Twitter", bg: "bg-black", url: `https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(blog.title)}` },
+                  { icon: <Linkedin className="w-5 h-5" />, label: "LinkedIn", bg: "bg-blue-700", url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}` },
+                  { icon: <MessageSquare className="w-5 h-5" />, label: "WhatsApp", bg: "bg-green-500", url: `https://wa.me/?text=${encodeURIComponent(blog.title + " " + window.location.href)}` },
+                  { icon: <LinkIcon className="w-5 h-5" />, label: "Email", bg: "bg-gray-500", url: `mailto:?subject=${encodeURIComponent(blog.title)}&body=${encodeURIComponent(window.location.href)}` },
+                ].map((item, idx) => (
+                  <a
+                    key={idx}
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex flex-col items-center gap-2 min-w-[70px] group"
+                  >
+                    <div className={`w-14 h-14 rounded-full flex items-center justify-center text-white shadow-md transition-transform group-hover:scale-110 ${item.bg}`}>
+                      {item.icon}
+                    </div>
+                    <span className="text-xs text-gray-500 font-sans font-medium">{item.label}</span>
+                  </a>
+                ))}
+              </div>
+
+              {/* Copy Link Section */}
+              <div className={`mt-6 p-1 rounded-lg border flex items-center ${theme === 'dark' ? 'bg-gray-950 border-gray-700' : 'bg-gray-100 border-gray-200'}`}>
+                <div className="flex-1 px-3 py-2 overflow-hidden">
+                  <p className="text-xs text-gray-500 font-sans font-bold uppercase tracking-wider mb-1">Page Link</p>
+                  <p className={`text-sm truncate font-mono ${textColor}`}>{window.location.href}</p>
+                </div>
+                <button
+                  onClick={handleCopyLink}
+                  className="px-6 py-3 rounded-md bg-teal-600 text-white font-bold text-sm hover:bg-teal-700 transition-colors flex items-center gap-2 m-1"
+                >
+                  {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  {copied ? "Copied" : "Copy"}
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
